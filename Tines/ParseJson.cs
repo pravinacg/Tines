@@ -15,107 +15,48 @@ namespace Tines
 
     public static class ParseJson
     {
+        //NOTE:Alternate way is to use dynamic object and expandoObject, which will create classes dynamically
         
-        public static string ParseURL(string URL,string Json)
-        {
-            string validatedURL = URL;
-            string key = "";
-            string keyVal = "";
-            JObject jsonTins = JObject.Parse(Json);
-
-            // NameValueCollection qscoll = HttpUtility.ParseQueryString(URL);
-
-            Dictionary<string, string> qscoll = GetParams(URL);
-            // Iterate through the collection.
-            StringBuilder sb = new StringBuilder("<br />");
-            foreach (String s in qscoll.Values)
-            {
-                if(s.Contains('.'))
-                {
-                    var array = s.Split('.');
-                    key = array[1].ToString().Replace("}}","").Trim();
-                }
-                if(Json.Contains(key))
-                {
-
-                }
-                JToken value;
-                if (jsonTins.TryGetValue(key, out value))
-                {
-                    keyVal = value.ToString();
-                }
-                validatedURL = validatedURL.Replace(s, keyVal);
-            }
-           
-            return validatedURL;
-        }
-
-        static List<string> getStringToReplace(string uri)
-        {
-            List<string> ab = new List<string>();
-            var xy = uri.Split().Where(x => x.StartsWith("{") && x.EndsWith("}")).ToList();
-            return ab;
-        }
-
-        static Dictionary<string, string> splitStingByChar(string uri)
+            
+        // Will return string collection from URL which needs to replace
+        static Dictionary<string, string> GetStringsToReplace(string uri)
         {
             var matches = Regex.Matches(uri, @"\{{([^}}]+)\}}", RegexOptions.Compiled);
             return matches.Cast<Match>().ToDictionary(
                 m => Uri.UnescapeDataString(m.Index.ToString()),
                 m => Uri.UnescapeDataString(m.Value)
             );
-            //var pattern = @"\{{([^}}]+)\}}";
-            //Dictionary<string, string> KVPs = (from Match m in Regex.Matches(uri, pattern)
-            //                                   select new
-            //                                   {
-            //                                       key = m.Index.ToString(),
-            //                                       value = m.Value
-            //                                   }
-            //).ToDictionary(p => p.key, p => p.value);
-
-
-            //return KVPs;
-
-
-        }
-        static Dictionary<string, string> GetParams(string uri)
-        {
-            var matches = Regex.Matches(uri, @"[\?&](([^&=]+)=([^&=#]*))", RegexOptions.Compiled);
            
-            return matches.Cast<Match>().ToDictionary(
-                m => Uri.UnescapeDataString(m.Groups[2].Value),
-                m => Uri.UnescapeDataString(m.Groups[3].Value)
-            );
         }
-
+       
+        //This method will replace URL parmater from json response ,find textToReplace in json collection 
         public static string parsePrint(string url,string tinsResponse)
         {
             string validatedURL = url;
             string key = "";
             string keyVal = "";
-            JObject jsonTins = JObject.Parse(tinsResponse);
-            Dictionary<string, string> qscoll = splitStingByChar(url);
-            StringBuilder sb = new StringBuilder("<br />");
-
-            foreach (String s in qscoll.Values)
+         
+            Dictionary<string, string> qscoll = GetStringsToReplace(url);
+         
+            foreach (String stringToReplace in qscoll.Values)
             {
                 keyVal = "";
-                if (s.Contains('.'))
+                if (stringToReplace.Contains('.'))
                 {
-                    var array = s.Split('.');
+                    var array = stringToReplace.Split('.');
                     key = array[array.Length-1].ToString().Replace("}}", "").Trim();
                 }
                
-                JToken value;
-                JObject jo = JObject.Parse(tinsResponse);
+               
+                JObject responseObject = JObject.Parse(tinsResponse);
 
-                foreach (JToken token in jo.FindTokens(key))
+                foreach (JToken token in responseObject.FindTokens(key))
                 {
                    keyVal = token.ToString();
                 }
 
                 
-                validatedURL = (keyVal != ""?validatedURL.Replace(s, keyVal):validatedURL);
+                validatedURL = (keyVal != "" ? validatedURL.Replace(stringToReplace, keyVal):validatedURL);
             }
 
             return validatedURL;

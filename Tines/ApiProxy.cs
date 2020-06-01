@@ -28,8 +28,7 @@ namespace Tines
             string TinsResponse = "";
             try
             {
-                
-                HttpResponseMessage response = _client.GetAsync(url).Result;
+                 HttpResponseMessage response = _client.GetAsync(url).Result;
                 TinsResponse = JObject.Parse(await response.Content.ReadAsStringAsync()).ToString();
             }
             catch (Exception e)
@@ -54,7 +53,7 @@ namespace Tines
                
                 if (response.IsSuccessStatusCode)
                 {
-                    TinsResponse = JObject.Parse(await response.Content.ReadAsStringAsync()).ToString();
+                    TinsResponse = await response.Content.ReadAsStringAsync();
                 }
                 else
                 {

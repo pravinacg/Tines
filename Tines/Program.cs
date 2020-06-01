@@ -13,28 +13,41 @@ namespace Tines
 {
     class Program
     {
+         
           static async Task Main(string[] args)
         {
-            string HTTPAgentPath = args[0];
-            
-            if(HTTPAgentPath == "")
+            string HTTPAgentPath;
+            if (args.Length == 0)
             {
                 Console.WriteLine("Missing input ,Please pass filename along with Path");
-                return;
+                 HTTPAgentPath = Console.ReadLine();
             }
+            else
+            {
+                HTTPAgentPath = args[0];
+            }
+          
            
-            ApiProxy proxy = new ApiProxy();
+            //Read any file of json type
 
             string json = "";
+            if(!File.Exists(HTTPAgentPath))
+            {
+                Console.WriteLine("File not found");
+                return;
+            }
             using (StreamReader r = new StreamReader(HTTPAgentPath))
             {
                 json = r.ReadToEnd();
+               
             }
+
             RootAgents agentList = JsonConvert.DeserializeObject<RootAgents>(json);
 
-            string locationURL = "";
-            string agentName = "";
-            string tinsResponse = "";
+            string locationURL;
+            string agentName;
+            string tinsResponse="";
+            ApiProxy proxy = new ApiProxy();
 
             if (agentList != null)
             {
@@ -60,9 +73,9 @@ namespace Tines
                     else if(agent.type == "PrintAgent")
                     {
                         var arrResult = tinsResponse.Split('|');
-                        foreach(string s in arrResult)
+                        foreach(string jsonResponseCollection in arrResult)
                         {
-                            locationURL = ParseJson.parsePrint(locationURL, s); 
+                            locationURL = ParseJson.parsePrint(locationURL, jsonResponseCollection); 
                         }
                        
                         Console.WriteLine(locationURL);

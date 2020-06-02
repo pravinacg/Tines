@@ -48,7 +48,7 @@ namespace Tines
             string agentName;
             string tinsResponse="";
             ApiProxy proxy = new ApiProxy();
-
+           
             if (agentList != null)
             {
                 foreach (var agent in agentList.Agents)
@@ -65,8 +65,14 @@ namespace Tines
                             if(locationURL.Contains("?"))
                             {
                                 locationURL = ParseJson.parsePrint(locationURL, tinsResponse);
+                                tinsResponse = tinsResponse +"|" + await proxy.GetLocationAsync(locationURL);
                             }
-                            tinsResponse = (tinsResponse!=""? tinsResponse + "|" + await proxy.GetLocationAsync(locationURL): await proxy.GetLocationAsync(locationURL));
+                            else
+                            {
+                                tinsResponse = (tinsResponse != "" ? tinsResponse + "|" + await proxy.GetValues(locationURL) : await proxy.GetValues(locationURL));
+                               
+                            }
+                          
                         }
 
                     }
@@ -75,11 +81,14 @@ namespace Tines
                         var arrResult = tinsResponse.Split('|');
                         foreach(string jsonResponseCollection in arrResult)
                         {
-                            locationURL = ParseJson.parsePrint(locationURL, jsonResponseCollection); 
+                            if(jsonResponseCollection != "")
+                            {
+                                locationURL = ParseJson.parsePrint(locationURL, jsonResponseCollection);
+                            }
+                            
                         }
                        
                         Console.WriteLine(locationURL);
-                        
 
                     }
 

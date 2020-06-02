@@ -50,15 +50,17 @@ namespace Tines
 
                          
                 HttpResponseMessage response = await _client.SendAsync(request);
-               
+
                 if (response.IsSuccessStatusCode)
                 {
                     TinsResponse = await response.Content.ReadAsStringAsync();
                 }
                 else
                 {
-                    TinsResponse =  await GetValues(url);
-                }
+                    Console.WriteLine(@"exception occured in calling URL :"+ url +"\n" +"reason :"+ response.ReasonPhrase);
+                    Console.ReadLine();
+                    return "";
+                }                    
             }
             catch(Exception ex)
             {
